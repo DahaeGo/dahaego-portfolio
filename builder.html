@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portfolio Builder — Dahae Go</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #fff;
+      color: #111;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── NAV ──────────────────────────────────────────── */
+    nav {
+      height: 44px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      background: #fff;
+      z-index: 10;
+    }
+    .nav-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; }
+    .nav-sub   { font-size: 10px; color: #aaa; letter-spacing: 0.06em; margin-left: 12px; }
+
+    .btn {
+      font-family: inherit;
+      font-size: 10.5px;
+      letter-spacing: 0.06em;
+      padding: 6px 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.15);
+      background: #fff;
+      color: #111;
+      transition: background 0.15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn:hover    { background: #f5f5f3; }
+    .btn.primary  { background: #111; color: #fff; border-color: #111; }
+    .btn.primary:hover { background: #333; }
+    .btn.danger   { color: #c00; border-color: rgba(200,0,0,0.2); }
+    .btn.danger:hover  { background: #fff5f5; }
+
+    /* ── THREE PANELS ─────────────────────────────────── */
+    .panels { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── LEFT PANEL ───────────────────────────────────── */
+    .panel-left {
+      width: 200px;
+      flex-shrink: 0;
+      border-right: 1px solid rgba(0,0,0,0.09);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-left-header {
+      padding: 14px 16px 10px;
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #aaa;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+      flex-shrink: 0;
+    }
+    #project-list-sidebar { flex: 1; overflow-y: auto; }
+    #project-list-sidebar::-webkit-scrollbar { display: none; }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      transition: background 0.12s;
+    }
+    .sidebar-item:hover  { background: #f8f8f7; }
+    .sidebar-item.active { background: #111; color: #fff; }
+    .si-num  { font-size: 10px; color: #bbb; min-width: 18px; }
+    .sidebar-item.active .si-num { color: rgba(255,255,255,0.4); }
+    .si-name { font-size: 11px; font-weight: 500; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .panel-left-footer {
+      padding: 12px 14px;
+      border-top: 1px solid rgba(0,0,0,0.07);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ── MIDDLE PANEL ─────────────────────────────────── */
+    .panel-mid { flex: 1; overflow-y: auto; border-right: 1px solid rgba(0,0,0,0.09); }
+    .panel-mid::-webkit-scrollbar { display: none; }
+
+    .editor-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      font-size: 12px;
+      color: #ccc;
+      letter-spacing: 0.05em;
+    }
+
+    .editor-wrap { padding: 28px 28px 60px; }
+
+    .editor-section-title {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+
+    .field-group { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; margin-bottom: 14px; }
+    .field-group.single { grid-template-columns: 1fr; }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    .field label { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: #aaa; }
+    .field input,
+    .field textarea {
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 0.02em;
+      color: #111;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 3px;
+      padding: 8px 10px;
+      outline: none;
+      background: #fff;
+      transition: border-color 0.15s;
+      resize: none;
+    }
+    .field input:focus,
+    .field textarea:focus { border-color: #111; }
+    .field textarea { line-height: 1.7; min-height: 90px; }
+
+    /* ── GRID RATIO CONTROLS ──────────────────────────── */
+    .ratio-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .ratio-row label {
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #aaa;
+      min-width: 70px;
+    }
+    .ratio-input {
+      font-family: inherit;
+      font-size: 12px;
+      width: 52px;
+      padding: 6px 8px;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 3px;
+      outline: none;
+      text-align: center;
+      color: #111;
+      transition: border-color 0.15s;
+    }
+    .ratio-input:focus { border-color: #111; }
+    .ratio-sep { font-size: 12px; color: #bbb; }
+    .ratio-hint { font-size: 9.5px; color: #bbb; margin-left: 4px; }
+
+    /* Mini grid preview */
+    .mini-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 12px;
+      background: rgba(0,0,0,0.04);
+    }
+    .mini-cell { background: #ddd; transition: all 0.25s; }
+
+    /* ── IMAGE EDITOR ─────────────────────────────────── */
+    .img-editor-section { margin-top: 28px; }
+    .img-add-row { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+    .img-add-row .path-hint { font-size: 10px; color: #bbb; }
+    #img-file-input { display: none; }
+
+    #img-card-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .img-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 4px;
+      background: #fff;
+      cursor: grab;
+      transition: box-shadow 0.15s, opacity 0.15s;
+      user-select: none;
+    }
+    .img-card:active    { cursor: grabbing; }
+    .img-card.dragging  { opacity: 0.35; }
+    .img-card.drag-over { box-shadow: 0 0 0 2px #111; }
+
+    .img-card-thumb {
+      width: 72px; height: 48px;
+      object-fit: cover;
+      border-radius: 2px;
+      flex-shrink: 0;
+      background: #f0f0ee;
+    }
+    .img-card-info { flex: 1; min-width: 0; }
+    .img-card-badge { font-size: 8.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #aaa; margin-bottom: 3px; }
+    .img-card-badge.hero-badge { color: #111; font-weight: 600; }
+    .img-card-badge.grid-badge { color: #888; }
+    .img-card-path input {
+      font-family: inherit;
+      font-size: 10.5px;
+      color: #555;
+      border: none;
+      outline: none;
+      width: 100%;
+      padding: 0;
+      background: transparent;
+    }
+    .img-card-path input:focus { color: #111; }
+    .img-card-drag-handle { font-size: 14px; color: #ccc; cursor: grab; flex-shrink: 0; }
+    .img-card-del {
+      font-family: inherit;
+      font-size: 16px;
+      color: #ccc;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0 4px;
+      flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .img-card-del:hover { color: #c00; }
+
+    /* ── RIGHT PANEL: PREVIEW ─────────────────────────── */
+    .panel-right {
+      width: 42%;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #fff;
+    }
+    .preview-header {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid rgba(0,0,0,0.09);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #aaa;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .preview-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+    .preview-body::-webkit-scrollbar { display: none; }
+
+    .preview-detail { display: flex; flex: 1; min-height: 0; }
+
+    .preview-left {
+      width: 40%;
+      flex-shrink: 0;
+      background: #e8e8e6;
+      position: relative;
+      min-height: 300px;
+    }
+    .preview-left img {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: 0.08;
+    }
+
+    .preview-right { flex: 1; overflow-y: auto; border-left: 1px solid rgba(0,0,0,0.08); }
+    .preview-right::-webkit-scrollbar { display: none; }
+
+    .pv-header { padding: 16px 14px 14px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+    .pv-top    { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .pv-num    { font-size: 8.5px; color: #bbb; letter-spacing: 0.1em; margin-bottom: 3px; }
+
+    /* ── CONTENTEDITABLE PREVIEW FIELDS ───────────────── */
+    .pv-editable {
+      outline: none;
+      border-radius: 2px;
+      transition: background 0.15s;
+      cursor: text;
+    }
+    .pv-editable:hover  { background: rgba(0,0,0,0.04); }
+    .pv-editable:focus  { background: rgba(0,120,255,0.05); outline: 1px solid rgba(0,120,255,0.25); }
+
+    .pv-title { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; display: block; }
+    .pv-cat   { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: #bbb; display: block; padding-top: 2px; }
+    .pv-desc  { font-size: 10px; line-height: 1.8; color: #555; margin-bottom: 12px; display: block; }
+
+    .pv-meta { display: flex; border-top: 1px solid rgba(0,0,0,0.07); padding-top: 10px; }
+    .pv-meta-cell { flex: 1; padding-right: 8px; }
+    .pv-meta-cell + .pv-meta-cell { padding-left: 8px; border-left: 1px solid rgba(0,0,0,0.07); }
+    .pv-ml { font-size: 7.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #bbb; margin-bottom: 3px; }
+    .pv-mv { font-size: 9.5px; font-weight: 500; color: #333; line-height: 1.4; }
+
+    .pv-img-item { line-height: 0; border-bottom: 1px solid rgba(0,0,0,0.07); }
+    .pv-img-item img { width: 100%; display: block; }
+
+    .preview-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      font-size: 11px;
+      color: #ccc;
+      letter-spacing: 0.05em;
+    }
+
+    .edit-hint {
+      font-size: 8.5px;
+      color: #bbb;
+      letter-spacing: 0.04em;
+      text-transform: none;
+    }
+
+    .btn.generate {
+      background: #111;
+      border-color: #111;
+      color: #fff;
+      font-weight: 500;
+      gap: 6px;
+    }
+    .btn.generate:hover { background: #333; border-color: #333; }
+
+    .btn.publish {
+      background: #0a7a3d;
+      border-color: #0a7a3d;
+      color: #fff;
+      font-weight: 500;
+      gap: 6px;
+    }
+    .btn.publish:hover    { background: #08602f; border-color: #08602f; }
+    .btn.publish:disabled { opacity: 0.6; cursor: default; }
+
+    .publish-status {
+      font-size: 9.5px;
+      letter-spacing: 0.03em;
+      color: #aaa;
+      margin-left: 10px;
+    }
+    .publish-status.ok   { color: #0a7a3d; }
+    .publish-status.err  { color: #c00; }
+
+    .generate-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    .generate-bar-label {
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #aaa;
+    }
+    .generate-bar-hint {
+      font-size: 9px;
+      color: #bbb;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── GENERATE MODAL ───────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: 8px;
+      width: 560px;
+      max-width: 90vw;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+    }
+    .modal-header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .modal-title { font-size: 13px; font-weight: 600; letter-spacing: -0.01em; }
+    .modal-close {
+      font-size: 20px; color: #bbb; background: none; border: none;
+      cursor: pointer; padding: 0 4px; line-height: 1;
+    }
+    .modal-close:hover { color: #111; }
+
+    .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .modal-body::-webkit-scrollbar { display: none; }
+
+    .modal-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .modal-step-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #111; color: #fff;
+      font-size: 10px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .modal-step-content { flex: 1; }
+    .modal-step-title { font-size: 11.5px; font-weight: 600; margin-bottom: 6px; }
+    .modal-step-desc  { font-size: 10.5px; color: #777; line-height: 1.6; margin-bottom: 8px; }
+
+    .modal-paste-area {
+      width: 100%;
+      font-family: inherit;
+      font-size: 11px;
+      line-height: 1.7;
+      color: #111;
+      border: 1px solid rgba(0,0,0,0.15);
+      border-radius: 4px;
+      padding: 10px 12px;
+      resize: none;
+      height: 130px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .modal-paste-area:focus { border-color: #111; }
+    .modal-paste-area::placeholder { color: #ccc; }
+
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .step-done {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: #4caf50;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <!-- GENERATE MODAL (loading state) -->
+  <div class="modal-overlay" id="gen-modal">
+    <div class="modal" style="width:400px;">
+      <div class="modal-header">
+        <span class="modal-title" id="gen-modal-title">✦ Generate with Claude</span>
+        <button class="modal-close" onclick="closeModal()" id="gen-modal-close">×</button>
+      </div>
+      <div class="modal-body" id="gen-modal-body" style="padding:32px 24px;text-align:center;">
+        <div id="gen-loading" style="display:none;">
+          <div style="font-size:28px;margin-bottom:14px;">⏳</div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px;">Claude가 이미지를 분석 중...</div>
+          <div style="font-size:10.5px;color:#aaa;">20~30초 정도 걸릴 수 있어요</div>
+        </div>
+        <div id="gen-error" style="display:none;">
+          <div style="font-size:28px;margin-bottom:14px;">⚠️</div>
+          <div style="font-size:12px;font-weight:600;color:#c00;margin-bottom:8px;" id="gen-error-msg"></div>
+          <div style="font-size:10px;color:#aaa;line-height:1.7;" id="gen-error-hint"></div>
+        </div>
+        <div id="gen-server-guide" style="text-align:left;">
+          <div style="font-size:11.5px;font-weight:600;margin-bottom:10px;">먼저 서버를 한 번만 실행해주세요</div>
+          <div style="font-size:10px;color:#777;margin-bottom:12px;line-height:1.7;">
+            dahaego-portfolio 폴더의 <b>서버시작.command</b> 파일을 더블클릭하세요.<br>
+            한 번 실행하면 빌더를 사용하는 동안 계속 켜두면 됩니다.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" id="gen-modal-footer">
+        <button class="btn" onclick="closeModal()">취소</button>
+        <button class="btn primary" id="gen-retry-btn" onclick="runGenerate()" style="display:none;">다시 시도</button>
+        <button class="btn generate" id="gen-start-btn" onclick="runGenerate()">✦ Generate</button>
+      </div>
+    </div>
+  </div>
+
+  <nav>
+    <div>
+      <span class="nav-title">Portfolio Builder</span>
+      <span class="nav-sub">— Dahae Go</span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn" onclick="exportCode()" title="Publish가 안 될 때 수동 백업용">JSON 내보내기</button>
+      <a href="index.html" class="btn">← 포트폴리오 보기</a>
+    </div>
+  </nav>
+
+  <div class="panels">
+
+    <!-- LEFT -->
+    <div class="panel-left">
+      <div class="panel-left-header">Projects</div>
+      <div id="project-list-sidebar"></div>
+      <div class="panel-left-footer">
+        <button class="btn primary" onclick="addProject()">+ 프로젝트 추가</button>
+        <button class="btn danger" onclick="deleteProject()" id="del-btn" style="display:none">삭제</button>
+      </div>
+    </div>
+
+    <!-- MIDDLE: editor -->
+    <div class="panel-mid" id="panel-mid">
+      <div class="editor-placeholder" id="editor-placeholder">← 왼쪽에서 프로젝트를 선택하세요</div>
+      <div class="editor-wrap" id="editor-wrap" style="display:none">
+
+        <!-- Generate Bar -->
+        <div class="generate-bar">
+          <div>
+            <div class="generate-bar-label">Project Info</div>
+            <div class="generate-bar-hint" style="margin-top:3px;">이미지를 먼저 추가한 뒤 Generate 클릭</div>
+          </div>
+          <button class="btn generate" onclick="generatePrompt()">✦ Generate</button>
+        </div>
+
+        <!-- Publish Bar -->
+        <div class="generate-bar">
+          <div>
+            <div class="generate-bar-label">Publish</div>
+            <div class="generate-bar-hint" style="margin-top:3px;">이 프로젝트를 실제 포트폴리오 사이트에 반영해요</div>
+          </div>
+          <div style="display:flex;align-items:center;">
+            <span class="publish-status" id="publish-status"></span>
+            <button class="btn publish" id="publish-btn" onclick="publishCurrentProject()">↑ Publish</button>
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field">
+            <label>Number</label>
+            <input id="f-num" placeholder="01" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label>Project Name</label>
+            <input id="f-name" placeholder="RE;CODE" oninput="onNameChange()">
+          </div>
+          <div class="field">
+            <label>Date</label>
+            <input id="f-date" placeholder="2022.04" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label>Category</label>
+            <input id="f-category" placeholder="Rebranding" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label>Client</label>
+            <input id="f-client" placeholder="Kolon Sport" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label>Scope</label>
+            <input id="f-scope" placeholder="Identity · Graphic" oninput="updatePreview()">
+          </div>
+          <div class="field">
+            <label>Contribution</label>
+            <input id="f-contribution" placeholder="Team Project · Graphic 80%" oninput="updatePreview()">
+          </div>
+        </div>
+        <div class="field-group single" style="margin-bottom:28px;">
+          <div class="field">
+            <label>Description</label>
+            <textarea id="f-desc" placeholder="프로젝트 설명을 입력하세요..." oninput="updatePreview()"></textarea>
+          </div>
+        </div>
+
+        <!-- Grid Ratio -->
+        <div class="editor-section-title" style="margin-top:8px;">
+          Grid Aspect Ratio
+          <span style="font-size:8.5px;color:#bbb;margin-left:8px;text-transform:none;letter-spacing:0.03em;">index.html 메인 그리드 카드 높이 조정</span>
+        </div>
+
+        <div class="ratio-row">
+          <label>Tall 카드</label>
+          <input class="ratio-input" type="number" id="g-tall-w" value="5" min="1" max="32" oninput="onGridRatioChange()">
+          <span class="ratio-sep">/</span>
+          <input class="ratio-input" type="number" id="g-tall-h" value="6" min="1" max="32" oninput="onGridRatioChange()">
+          <span class="ratio-hint">← 세로 길게</span>
+        </div>
+        <div class="ratio-row">
+          <label>Short 카드</label>
+          <input class="ratio-input" type="number" id="g-short-w" value="16" min="1" max="32" oninput="onGridRatioChange()">
+          <span class="ratio-sep">/</span>
+          <input class="ratio-input" type="number" id="g-short-h" value="9" min="1" max="32" oninput="onGridRatioChange()">
+          <span class="ratio-hint">← 가로 넓게</span>
+        </div>
+
+        <!-- Mini grid preview -->
+        <div class="mini-grid" id="mini-grid">
+          <div class="mini-cell" id="mg-tall"></div>
+          <div class="mini-cell" id="mg-short" style="background:#c8c8c6;"></div>
+        </div>
+
+        <!-- Images -->
+        <div class="img-editor-section">
+          <div class="editor-section-title" style="margin-top:28px;">
+            Images
+            <span style="font-size:8.5px;color:#bbb;margin-left:8px;letter-spacing:0.03em;text-transform:none;">1번=히어로·그리드메인 / 2번=그리드보조 / 드래그로 순서 변경</span>
+          </div>
+          <div class="img-add-row">
+            <button class="btn" onclick="document.getElementById('img-file-input').click()">+ 이미지 추가</button>
+            <span class="path-hint">파일 선택 시 경로 자동 입력</span>
+            <input type="file" id="img-file-input" multiple accept="image/*" onchange="onFilePick(event)">
+          </div>
+          <div id="img-card-list"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: preview -->
+    <div class="panel-right">
+      <div class="preview-header">
+        <span>실시간 미리보기</span>
+        <span class="edit-hint">제목·부제·본문 클릭해서 직접 편집 가능</span>
+      </div>
+      <div class="preview-body" id="preview-body">
+        <div class="preview-empty" id="preview-empty">프로젝트를 선택하면 미리보기가 표시됩니다</div>
+        <div class="preview-detail" id="preview-detail" style="display:none">
+          <div class="preview-left">
+            <img id="pv-hero" src="" alt="">
+          </div>
+          <div class="preview-right">
+            <div class="pv-header">
+              <div class="pv-top">
+                <div>
+                  <div class="pv-num" id="pv-num"></div>
+                  <!-- CONTENTEDITABLE: 제목 -->
+                  <span class="pv-title pv-editable" id="pv-title"
+                    contenteditable="true" spellcheck="false"
+                    oninput="onPreviewEdit('name', this)"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();}">
+                  </span>
+                </div>
+                <!-- CONTENTEDITABLE: 카테고리/부제 -->
+                <span class="pv-cat pv-editable" id="pv-cat"
+                  contenteditable="true" spellcheck="false"
+                  oninput="onPreviewEdit('category', this)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();}">
+                </span>
+              </div>
+              <!-- CONTENTEDITABLE: 본문 설명 -->
+              <span class="pv-desc pv-editable" id="pv-desc"
+                contenteditable="true" spellcheck="false"
+                oninput="onPreviewEdit('desc', this)">
+              </span>
+              <div class="pv-meta">
+                <div class="pv-meta-cell"><div class="pv-ml">Client</div><div class="pv-mv" id="pv-client"></div></div>
+                <div class="pv-meta-cell"><div class="pv-ml">Scope</div><div class="pv-mv" id="pv-scope"></div></div>
+                <div class="pv-meta-cell"><div class="pv-ml">Date</div><div class="pv-mv" id="pv-date"></div></div>
+                <div class="pv-meta-cell"><div class="pv-ml">Contribution</div><div class="pv-mv" id="pv-contribution"></div></div>
+              </div>
+            </div>
+            <div id="pv-images"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* ══════════════════════════════════════════════════════════════════
+       DATA
+    ══════════════════════════════════════════════════════════════════ */
+    const DEFAULT_PROJECTS = [
+      {
+        id: 'recode', num: '01', name: 'RE;CODE', date: '2022.04',
+        category: 'Rebranding', client: 'Kolon Sport',
+        scope: 'Identity · Graphic · Application',
+        contribution: 'Team Project · Graphic 80%',
+        desc: '래코드는 환경적, 사회적 책임을 다하는 옷을 통해 의식 있는 삶을 실현하도록 돕는 코오롱 FnC의 컨서스 패션 브랜드입니다. 워드마크는 단독으로 사용해도 제품에 로고 플레이가 가능하도록 완성도와 밸런스를 고려하였으며, 다양한 매체에 유연하게 반영될 수 있는 시스템을 확립하였습니다.',
+        images: [
+          { path: './00_jpg/스크린샷 2026-06-27 오전 11.08.58.png', blobUrl: null },
+          { path: './00_jpg/스크린샷 2026-06-27 오전 11.09.19.png', blobUrl: null },
+          { path: './00_jpg/스크린샷 2026-06-27 오전 11.09.34.png', blobUrl: null },
+          { path: './00_jpg/스크린샷 2026-06-27 오전 11.09.52.png', blobUrl: null },
+        ]
+      },
+      {
+        id: 'pado', num: '02', name: 'MUSEUM PADO', date: '2022',
+        category: 'Branding', client: 'Korea National Oil Corp.',
+        scope: 'Identity · Graphic · Signage',
+        contribution: 'Team Project · Graphic 80%',
+        desc: '미디어아트의 새로운 물결을 만들어가는 Museum Pado의 브랜드 아이덴티티 개발 프로젝트입니다. 파도(波)가 지닌 역동성과 예술의 유연함을 심볼에 담아 공간의 정체성을 시각화하였으며, 티켓·사이니지·굿즈 등 다양한 접점에 일관된 브랜드 경험을 구축하였습니다.',
+        images: [
+          { path: './00_jpg/pado/고다혜_포트폴리오_페이지_55.jpg', blobUrl: null },
+          { path: './00_jpg/pado/고다혜_포트폴리오_페이지_56.jpg', blobUrl: null },
+          { path: './00_jpg/pado/고다혜_포트폴리오_페이지_57.jpg', blobUrl: null },
+          { path: './00_jpg/pado/고다혜_포트폴리오_페이지_58.jpg', blobUrl: null },
+          { path: './00_jpg/pado/고다혜_포트폴리오_페이지_59.jpg', blobUrl: null },
+        ]
+      },
+      {
+        id: 'earth', num: '03', name: 'EARTH MATTERS', date: '2022',
+        category: 'Branding', client: 'Kolon Sport',
+        scope: 'Identity · Graphic · Packaging',
+        contribution: 'Team Project · Graphic 80%',
+        desc: '코오롱스포츠의 친환경 라인 Earth Matters의 브랜드 아이덴티티 개발 프로젝트입니다. 지속 가능한 삶을 추구하는 브랜드 철학을 시각적으로 표현하여, 패키징과 의류 태그, 아웃도어 응용물에 일관된 친환경 브랜드 경험을 구축하였습니다.',
+        images: [
+          { path: './00_jpg/earth/고다혜_포트폴리오_페이지_37.jpg', blobUrl: null },
+          { path: './00_jpg/earth/고다혜_포트폴리오_페이지_39.jpg', blobUrl: null },
+          { path: './00_jpg/earth/고다혜_포트폴리오_페이지_40.jpg', blobUrl: null },
+          { path: './00_jpg/earth/고다혜_포트폴리오_페이지_41.jpg', blobUrl: null },
+        ]
+      },
+    ];
+
+    // Grid ratios (global, stored separately)
+    let gridRatios = JSON.parse(localStorage.getItem('dahae_grid_ratios')) || { tw: 5, th: 6, sw: 16, sh: 9 };
+    let projects   = JSON.parse(localStorage.getItem('dahae_builder_data')) || DEFAULT_PROJECTS;
+    let currentId  = null;
+    let dragSrcIdx = null;
+    let focusedPreviewField = null; // prevent overwrite while editing
+
+    /* ══════════════════════════════════════════════════════════════════
+       SAVE
+    ══════════════════════════════════════════════════════════════════ */
+    function save() {
+      const toSave = projects.map(p => ({
+        ...p,
+        images: p.images.map(img => ({ path: img.path, blobUrl: null }))
+      }));
+      localStorage.setItem('dahae_builder_data', JSON.stringify(toSave));
+      localStorage.setItem('dahae_grid_ratios', JSON.stringify(gridRatios));
+    }
+
+    function currentProject() { return projects.find(p => p.id === currentId) || null; }
+
+    /* ══════════════════════════════════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════════════════════════════════ */
+    function renderSidebar() {
+      const list = document.getElementById('project-list-sidebar');
+      list.innerHTML = '';
+      projects.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'sidebar-item' + (p.id === currentId ? ' active' : '');
+        item.innerHTML = `<span class="si-num">${p.num}</span><span class="si-name">${p.name}</span>`;
+        item.onclick = () => selectProject(p.id);
+        list.appendChild(item);
+      });
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       SELECT PROJECT
+    ══════════════════════════════════════════════════════════════════ */
+    function selectProject(id) {
+      currentId = id;
+      const p = currentProject();
+      if (!p) return;
+
+      document.getElementById('editor-placeholder').style.display = 'none';
+      document.getElementById('editor-wrap').style.display = 'block';
+      document.getElementById('del-btn').style.display = 'block';
+
+      document.getElementById('f-num').value          = p.num;
+      document.getElementById('f-name').value         = p.name;
+      document.getElementById('f-date').value         = p.date;
+      document.getElementById('f-category').value     = p.category;
+      document.getElementById('f-client').value       = p.client;
+      document.getElementById('f-scope').value        = p.scope;
+      document.getElementById('f-contribution').value = p.contribution;
+      document.getElementById('f-desc').value         = p.desc;
+
+      // Load grid ratios into inputs
+      document.getElementById('g-tall-w').value  = gridRatios.tw;
+      document.getElementById('g-tall-h').value  = gridRatios.th;
+      document.getElementById('g-short-w').value = gridRatios.sw;
+      document.getElementById('g-short-h').value = gridRatios.sh;
+      updateMiniGrid();
+
+      renderImageCards();
+      renderSidebar();
+      updatePreview();
+      setPublishStatus('', '');
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       SYNC FIELDS → PROJECT
+    ══════════════════════════════════════════════════════════════════ */
+    function syncFields() {
+      const p = currentProject();
+      if (!p) return;
+      p.num          = document.getElementById('f-num').value;
+      p.name         = document.getElementById('f-name').value;
+      p.date         = document.getElementById('f-date').value;
+      p.category     = document.getElementById('f-category').value;
+      p.client       = document.getElementById('f-client').value;
+      p.scope        = document.getElementById('f-scope').value;
+      p.contribution = document.getElementById('f-contribution').value;
+      p.desc         = document.getElementById('f-desc').value;
+      save();
+    }
+
+    function onNameChange() { syncFields(); renderSidebar(); updatePreview(); }
+
+    /* ══════════════════════════════════════════════════════════════════
+       PREVIEW → CONTENTEDITABLE SYNC
+    ══════════════════════════════════════════════════════════════════ */
+    const previewFieldMap = { name: 'f-name', category: 'f-category', desc: 'f-desc' };
+
+    function onPreviewEdit(field, el) {
+      focusedPreviewField = field;
+      const p = currentProject();
+      if (!p) return;
+      p[field] = el.innerText;
+      const formEl = document.getElementById(previewFieldMap[field]);
+      if (formEl) formEl.value = el.innerText;
+      if (field === 'name') renderSidebar();
+      save();
+    }
+
+    // Track which field is being edited in preview to avoid overwriting it
+    document.querySelectorAll('.pv-editable').forEach(el => {
+      el.addEventListener('focus',  () => focusedPreviewField = el.id.replace('pv-', ''));
+      el.addEventListener('blur',   () => { focusedPreviewField = null; });
+    });
+
+    /* ══════════════════════════════════════════════════════════════════
+       GRID RATIO CONTROLS
+    ══════════════════════════════════════════════════════════════════ */
+    function onGridRatioChange() {
+      gridRatios.tw = parseInt(document.getElementById('g-tall-w').value)  || 5;
+      gridRatios.th = parseInt(document.getElementById('g-tall-h').value)  || 6;
+      gridRatios.sw = parseInt(document.getElementById('g-short-w').value) || 16;
+      gridRatios.sh = parseInt(document.getElementById('g-short-h').value) || 9;
+      updateMiniGrid();
+      save();
+    }
+
+    function updateMiniGrid() {
+      const { tw, th, sw, sh } = gridRatios;
+      // Mini preview: show relative heights of tall vs short
+      const base = 180; // reference width px
+      const tallH  = Math.round(base * th / tw);
+      const shortH = Math.round(base * sh / sw);
+      document.getElementById('mg-tall').style.height  = tallH + 'px';
+      document.getElementById('mg-short').style.height = shortH + 'px';
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       IMAGE CARDS
+    ══════════════════════════════════════════════════════════════════ */
+    function renderImageCards() {
+      const p = currentProject();
+      if (!p) return;
+      const list = document.getElementById('img-card-list');
+      list.innerHTML = '';
+
+      p.images.forEach((img, i) => {
+        const card = document.createElement('div');
+        card.className = 'img-card';
+        card.draggable = true;
+        card.dataset.index = i;
+
+        let badge = i === 0
+          ? '<span class="img-card-badge hero-badge">HERO / GRID 메인</span>'
+          : i === 1
+            ? '<span class="img-card-badge grid-badge">GRID 보조</span>'
+            : `<span class="img-card-badge">상세 이미지 ${i + 1}</span>`;
+
+        const src = img.blobUrl || img.path;
+        card.innerHTML = `
+          <span class="img-card-drag-handle">⠿</span>
+          <img class="img-card-thumb" src="${src}" onerror="this.style.background='#eee'">
+          <div class="img-card-info">
+            ${badge}
+            <div class="img-card-path">
+              <input type="text" value="${img.path}" data-index="${i}"
+                onchange="onPathChange(this)" onclick="this.select()">
+            </div>
+          </div>
+          <button class="img-card-del" onclick="deleteImage(${i})">×</button>
+        `;
+
+        card.addEventListener('dragstart', () => {
+          dragSrcIdx = i;
+          setTimeout(() => card.classList.add('dragging'), 0);
+        });
+        card.addEventListener('dragend',  () => card.classList.remove('dragging'));
+        card.addEventListener('dragover', e => { e.preventDefault(); card.classList.add('drag-over'); });
+        card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+        card.addEventListener('drop', e => {
+          e.preventDefault();
+          card.classList.remove('drag-over');
+          if (dragSrcIdx !== null && dragSrcIdx !== i) {
+            const [moved] = p.images.splice(dragSrcIdx, 1);
+            p.images.splice(i, 0, moved);
+            dragSrcIdx = null;
+            renderImageCards();
+            updatePreview();
+            save();
+          }
+        });
+
+        list.appendChild(card);
+      });
+    }
+
+    function onPathChange(input) {
+      const p = currentProject();
+      if (!p) return;
+      p.images[parseInt(input.dataset.index)].path = input.value;
+      save();
+      updatePreview();
+    }
+
+    function deleteImage(i) {
+      const p = currentProject();
+      if (!p) return;
+      p.images.splice(i, 1);
+      renderImageCards();
+      updatePreview();
+      save();
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       FILE PICKER
+    ══════════════════════════════════════════════════════════════════ */
+    function onFilePick(event) {
+      const p = currentProject();
+      if (!p) return;
+      Array.from(event.target.files).forEach(file => {
+        p.images.push({ path: './00_jpg/' + file.name, blobUrl: URL.createObjectURL(file), file });
+      });
+      event.target.value = '';
+      renderImageCards();
+      updatePreview();
+      save();
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       ADD / DELETE PROJECT
+    ══════════════════════════════════════════════════════════════════ */
+    function addProject() {
+      const newId = 'project_' + Date.now();
+      projects.push({
+        id: newId,
+        num: String(projects.length + 1).padStart(2, '0'),
+        name: '새 프로젝트', date: '2026', category: 'Branding',
+        client: '', scope: '', contribution: 'Team Project · Graphic 00%',
+        desc: '프로젝트 설명을 입력하세요.',
+        images: []
+      });
+      save();
+      renderSidebar();
+      selectProject(newId);
+    }
+
+    function deleteProject() {
+      if (!currentId || !confirm('이 프로젝트를 삭제하시겠습니까?')) return;
+      projects = projects.filter(p => p.id !== currentId);
+      currentId = null;
+      save();
+      renderSidebar();
+      document.getElementById('editor-placeholder').style.display = 'flex';
+      document.getElementById('editor-wrap').style.display = 'none';
+      document.getElementById('del-btn').style.display = 'none';
+      document.getElementById('preview-empty').style.display  = 'flex';
+      document.getElementById('preview-detail').style.display = 'none';
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       REAL-TIME PREVIEW
+    ══════════════════════════════════════════════════════════════════ */
+    function updatePreview() {
+      syncFields();
+      const p = currentProject();
+      if (!p) return;
+
+      document.getElementById('preview-empty').style.display  = 'none';
+      document.getElementById('preview-detail').style.display = 'flex';
+
+      const heroSrc = p.images[0] ? (p.images[0].blobUrl || p.images[0].path) : '';
+      document.getElementById('pv-hero').src = heroSrc;
+      document.getElementById('pv-num').textContent    = p.num;
+      document.getElementById('pv-client').textContent = p.client;
+      document.getElementById('pv-scope').textContent  = p.scope;
+      document.getElementById('pv-date').textContent   = p.date;
+      document.getElementById('pv-contribution').textContent = p.contribution;
+
+      // Only update contenteditable fields if they're not currently focused
+      const activeId = document.activeElement ? document.activeElement.id : null;
+      if (activeId !== 'pv-title')    document.getElementById('pv-title').textContent = p.name;
+      if (activeId !== 'pv-cat')      document.getElementById('pv-cat').textContent   = p.category;
+      if (activeId !== 'pv-desc')     document.getElementById('pv-desc').textContent  = p.desc;
+
+      const pvImgs = document.getElementById('pv-images');
+      pvImgs.innerHTML = '';
+      p.images.forEach(img => {
+        const src = img.blobUrl || img.path;
+        const div = document.createElement('div');
+        div.className = 'pv-img-item';
+        div.innerHTML = `<img src="${src}" onerror="this.style.display='none'">`;
+        pvImgs.appendChild(div);
+      });
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       GENERATE — 자동 (로컬 서버 경유)
+    ══════════════════════════════════════════════════════════════════ */
+    const GEN_SERVER = 'http://localhost:3131';
+
+    function generatePrompt() {
+      const p = currentProject();
+      if (!p) return;
+      // reset modal state
+      document.getElementById('gen-loading').style.display   = 'none';
+      document.getElementById('gen-error').style.display     = 'none';
+      document.getElementById('gen-server-guide').style.display = 'block';
+      document.getElementById('gen-start-btn').style.display = 'inline-flex';
+      document.getElementById('gen-retry-btn').style.display = 'none';
+      document.getElementById('gen-modal-close').style.display = 'inline';
+      document.getElementById('gen-modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('gen-modal').classList.remove('open');
+    }
+
+    async function runGenerate() {
+      const p = currentProject();
+      if (!p) return;
+
+      // Show loading
+      document.getElementById('gen-server-guide').style.display = 'none';
+      document.getElementById('gen-error').style.display        = 'none';
+      document.getElementById('gen-loading').style.display      = 'block';
+      document.getElementById('gen-start-btn').style.display    = 'none';
+      document.getElementById('gen-retry-btn').style.display    = 'none';
+      document.getElementById('gen-modal-close').style.display  = 'none';
+
+      try {
+        const res = await fetch(`${GEN_SERVER}/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name:         p.name,
+            client:       p.client,
+            date:         p.date,
+            scope:        p.scope,
+            contribution: p.contribution,
+            imagePaths:   p.images.map(img => img.path),
+          }),
+        });
+
+        if (!res.ok) throw new Error(`서버 오류 ${res.status}`);
+        const { result, error } = await res.json();
+        if (error) throw new Error(error);
+
+        applyResult(result);
+        closeModal();
+
+      } catch (err) {
+        document.getElementById('gen-loading').style.display = 'none';
+        document.getElementById('gen-error').style.display   = 'block';
+        document.getElementById('gen-modal-close').style.display = 'inline';
+        document.getElementById('gen-retry-btn').style.display   = 'inline-flex';
+
+        const isConnection = err.message.includes('fetch') || err.message.includes('Failed');
+        document.getElementById('gen-error-msg').textContent = isConnection
+          ? '서버에 연결할 수 없습니다'
+          : `오류: ${err.message}`;
+        document.getElementById('gen-error-hint').innerHTML = isConnection
+          ? 'dahaego-portfolio 폴더의 <b>서버시작.command</b>를 먼저 실행해주세요.'
+          : '다시 시도하거나 이미지 경로를 확인해주세요.';
+      }
+    }
+
+    function applyResult(raw) {
+      const p = currentProject();
+      if (!p || !raw) return;
+
+      const nameMatch = raw.match(/프로젝트명\s*[:：]\s*(.+)/);
+      const catMatch  = raw.match(/카테고리\s*[:：]\s*(.+)/);
+      const descMatch = raw.match(/설명\s*[:：]\s*([\s\S]+)/);
+
+      if (nameMatch) {
+        p.name = nameMatch[1].trim();
+        document.getElementById('f-name').value = p.name;
+        document.getElementById('pv-title').textContent = p.name;
+      }
+      if (catMatch) {
+        p.category = catMatch[1].trim();
+        document.getElementById('f-category').value = p.category;
+        document.getElementById('pv-cat').textContent = p.category;
+      }
+      if (descMatch) {
+        p.desc = descMatch[1].replace(/```[\s\S]*?```/g, '').trim();
+        document.getElementById('f-desc').value = p.desc;
+        document.getElementById('pv-desc').textContent = p.desc;
+      }
+
+      renderSidebar();
+      save();
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       PUBLISH — 이 프로젝트를 실제 사이트에 반영 (로컬 서버 경유)
+    ══════════════════════════════════════════════════════════════════ */
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload  = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function setPublishStatus(text, kind) {
+      const el = document.getElementById('publish-status');
+      el.textContent = text;
+      el.className = 'publish-status' + (kind ? ' ' + kind : '');
+    }
+
+    async function publishCurrentProject() {
+      const p = currentProject();
+      if (!p) return;
+
+      syncFields();
+
+      const btn = document.getElementById('publish-btn');
+      btn.disabled = true;
+      setPublishStatus('게시 중...', '');
+
+      try {
+        const newImages = [];
+        for (const img of p.images) {
+          if (img.file) {
+            newImages.push({
+              filename: img.path.split('/').pop(),
+              data: await fileToBase64(img.file),
+            });
+          }
+        }
+
+        const payload = {
+          project: {
+            id: p.id, num: p.num, name: p.name, date: p.date,
+            category: p.category, client: p.client, scope: p.scope,
+            contribution: p.contribution, desc: p.desc,
+            detail: p.images.map(img => img.path),
+          },
+          newImages,
+        };
+
+        const res  = await fetch(`${GEN_SERVER}/publish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) throw new Error(data.error || `서버 오류 ${res.status}`);
+
+        // 새로 업로드된 이미지는 이제 서버에 저장됐으니 file 참조를 정리
+        p.images.forEach(img => { delete img.file; });
+        save();
+
+        setPublishStatus('게시 완료 ✓ (1분 내 사이트에 반영돼요)', 'ok');
+
+      } catch (err) {
+        const isConnection = err.message.includes('fetch') || err.message.includes('Failed');
+        setPublishStatus(
+          isConnection ? '서버에 연결할 수 없어요 — 서버시작.command를 먼저 실행해주세요' : `실패: ${err.message}`,
+          'err'
+        );
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       EXPORT JSON (Publish 버튼이 안 될 때 쓰는 수동 백업 경로)
+    ══════════════════════════════════════════════════════════════════ */
+    function exportCode() {
+      const json = JSON.stringify(
+        projects.map(p => ({
+          id: p.id, num: p.num, name: p.name, date: p.date,
+          category: p.category, client: p.client, scope: p.scope,
+          contribution: p.contribution, desc: p.desc,
+          detail: p.images.map(img => img.path),
+        })),
+        null, 2
+      );
+
+      navigator.clipboard.writeText(json).then(() => {
+        alert('클립보드에 복사됐습니다!\ndata/projects.json 파일 내용 전체를 이걸로 교체하세요.');
+      }).catch(() => {
+        const w = window.open('', '_blank', 'width=700,height=500');
+        w.document.write(`<textarea style="width:100%;height:100%;font-family:monospace;font-size:12px;padding:16px;">${json}</textarea>`);
+      });
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       INIT
+    ══════════════════════════════════════════════════════════════════ */
+    renderSidebar();
+    if (projects.length > 0) selectProject(projects[0].id);
+  </script>
+</body>
+</html>

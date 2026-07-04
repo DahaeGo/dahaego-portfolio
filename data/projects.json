@@ -1,0 +1,54 @@
+[
+  {
+    "id": "recode",
+    "num": "01",
+    "name": "RE;CODE",
+    "date": "2022.04",
+    "category": "Rebranding",
+    "client": "Kolon Sport",
+    "scope": "Identity · Graphic · Application",
+    "contribution": "Team Project · Graphic 80%",
+    "desc": "래코드는 환경적, 사회적 책임을 다하는 옷을 통해 의식 있는 삶을 실현하도록 돕는 코오롱 FnC의 컨서스 패션 브랜드입니다. 워드마크는 단독으로 사용해도 제품에 로고 플레이가 가능하도록 완성도와 밸런스를 고려하였으며, 다양한 매체에 유연하게 반영될 수 있는 시스템을 확립하였습니다.",
+    "detail": [
+      "./00_jpg/스크린샷 2026-06-27 오전 11.08.58.png",
+      "./00_jpg/스크린샷 2026-06-27 오전 11.09.19.png",
+      "./00_jpg/스크린샷 2026-06-27 오전 11.09.34.png",
+      "./00_jpg/스크린샷 2026-06-27 오전 11.09.52.png"
+    ]
+  },
+  {
+    "id": "pado",
+    "num": "02",
+    "name": "MUSEUM PADO",
+    "date": "2022",
+    "category": "Branding",
+    "client": "Korea National Oil Corp.",
+    "scope": "Identity · Graphic · Signage",
+    "contribution": "Team Project · Graphic 80%",
+    "desc": "미디어아트의 새로운 물결을 만들어가는 Museum Pado의 브랜드 아이덴티티 개발 프로젝트입니다. 파도(波)가 지닌 역동성과 예술의 유연함을 심볼에 담아 공간의 정체성을 시각화하였으며, 티켓·사이니지·굿즈 등 다양한 접점에 일관된 브랜드 경험을 구축하였습니다.",
+    "detail": [
+      "./00_jpg/pado/고다혜_포트폴리오_페이지_55.jpg",
+      "./00_jpg/pado/고다혜_포트폴리오_페이지_56.jpg",
+      "./00_jpg/pado/고다혜_포트폴리오_페이지_57.jpg",
+      "./00_jpg/pado/고다혜_포트폴리오_페이지_58.jpg",
+      "./00_jpg/pado/고다혜_포트폴리오_페이지_59.jpg"
+    ]
+  },
+  {
+    "id": "earth",
+    "num": "03",
+    "name": "EARTH MATTERS",
+    "date": "2022",
+    "category": "Branding",
+    "client": "Kolon Sport",
+    "scope": "Identity · Graphic · Packaging",
+    "contribution": "Team Project · Graphic 80%",
+    "desc": "코오롱스포츠의 친환경 라인 Earth Matters의 브랜드 아이덴티티 개발 프로젝트입니다. 지속 가능한 삶을 추구하는 브랜드 철학을 시각적으로 표현하여, 패키징과 의류 태그, 아웃도어 응용물에 일관된 친환경 브랜드 경험을 구축하였습니다.",
+    "detail": [
+      "./00_jpg/earth/고다혜_포트폴리오_페이지_37.jpg",
+      "./00_jpg/earth/고다혜_포트폴리오_페이지_39.jpg",
+      "./00_jpg/earth/고다혜_포트폴리오_페이지_40.jpg",
+      "./00_jpg/earth/고다혜_포트폴리오_페이지_41.jpg"
+    ]
+  }
+]

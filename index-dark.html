@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dahae Go — Portfolio</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #0d0d0d;
+      color: #e8e8e8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ─────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 300;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: #0d0d0d;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .nav-brand {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: #e8e8e8;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+
+    .nav-links { display: flex; align-items: center; gap: 22px; }
+
+    .nav-links a,
+    .nav-links button {
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      color: #e8e8e8;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .nav-links a:hover,
+    .nav-links button:hover { opacity: 0.4; }
+
+    /* ── GRID VIEW ───────────────────────────────────── */
+    #view-grid {
+      padding-top: 44px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    #col-left { border-right: 1px solid rgba(255,255,255,0.07); }
+
+    .project-card {
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      overflow: hidden;
+    }
+
+    .card-img { line-height: 0; overflow: hidden; }
+
+    .card-img img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94);
+      filter: brightness(0.88);
+    }
+
+    .project-card:hover .card-img img {
+      transform: scale(1.03);
+      filter: brightness(1);
+    }
+
+    .project-card.tall  .card-img img { aspect-ratio: 5 / 6; }
+    .project-card.short .card-img img { aspect-ratio: 16 / 9; }
+
+    .card-meta {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 9px 16px 11px;
+    }
+
+    .pm-num  { font-size: 10px; color: #444; letter-spacing: 0.05em; min-width: 18px; }
+    .pm-name { font-size: 11.5px; font-weight: 500; letter-spacing: 0.04em; color: #e8e8e8; }
+    .pm-date { font-size: 10.5px; color: #444; }
+    .pm-cat  { margin-left: auto; font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: #333; }
+
+    /* ── DETAIL VIEW ─────────────────────────────────── */
+    #view-detail {
+      display: none;
+      position: fixed;
+      inset: 44px 0 0 0;
+      z-index: 200;
+    }
+
+    #view-detail.open { display: flex; }
+
+    .detail-left {
+      width: 50%;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: #1a1a1a;
+      position: relative;
+    }
+
+    .detail-left img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.12;
+    }
+
+    .detail-right {
+      width: 50%;
+      height: 100%;
+      overflow-y: auto;
+      border-left: 1px solid rgba(255,255,255,0.07);
+      background: #0d0d0d;
+    }
+
+    .detail-right::-webkit-scrollbar { display: none; }
+
+    .detail-header {
+      padding: 28px 20px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .dh-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .dh-num   { font-size: 10px; color: #444; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .dh-title { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; color: #e8e8e8; }
+    .dh-cat   { font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #444; padding-top: 3px; }
+
+    .dh-desc {
+      font-size: 11.5px;
+      line-height: 1.85;
+      color: #777;
+      margin-bottom: 20px;
+      letter-spacing: 0.01em;
+    }
+
+    .dh-meta {
+      display: flex;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding-top: 14px;
+    }
+
+    .dh-meta-cell { flex: 1; padding-right: 10px; }
+    .dh-meta-cell + .dh-meta-cell { padding-left: 10px; border-left: 1px solid rgba(255,255,255,0.06); }
+
+    .dm-label {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #444;
+      margin-bottom: 4px;
+    }
+
+    .dm-value {
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: #aaa;
+      line-height: 1.5;
+    }
+
+    .detail-img-wrap {
+      line-height: 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .detail-img-wrap img { width: 100%; display: block; }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    footer {
+      padding: 14px 20px;
+      font-size: 9.5px;
+      color: #333;
+      letter-spacing: 0.07em;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <button class="nav-brand" onclick="closeDetail()">Dahae Go</button>
+    <div class="nav-links" id="nav-default">
+      <a href="#">Information</a>
+      <a href="#">Instagram</a>
+      <a href="mailto:gdh3997@gmail.com">Email</a>
+    </div>
+    <div class="nav-links" id="nav-detail" style="display:none">
+      <span id="nav-detail-label" style="font-size:11px;letter-spacing:0.08em;"></span>
+      <button onclick="closeDetail()">(Close)</button>
+    </div>
+  </nav>
+
+  <div id="view-grid">
+    <div class="masonry-col" id="col-left"></div>
+    <div class="masonry-col" id="col-right"></div>
+  </div>
+  <footer id="footer">All Rights Reserved © 2026</footer>
+
+  <div id="view-detail">
+    <div class="detail-left">
+      <img id="detail-hero-img" src="" alt="">
+    </div>
+    <div class="detail-right" id="detail-right"></div>
+  </div>
+
+  <script>
+    let PROJECTS = [];
+
+    function renderGrid() {
+      const leftCol  = document.getElementById('col-left');
+      const rightCol = document.getElementById('col-right');
+      leftCol.innerHTML = rightCol.innerHTML = '';
+
+      const leftCards = [], rightCards = [];
+
+      PROJECTS.forEach((p, i) => {
+        const primaryLeft = i % 2 === 0;
+        const src2 = p.detail[1] || p.detail[0];
+        leftCards.push(  primaryLeft ? { p, src: p.detail[0], label: true  } : null);
+        rightCards.push(!primaryLeft ? { p, src: p.detail[0], label: true  } : null);
+        leftCards.push(  primaryLeft ? null : { p, src: src2, label: false });
+        rightCards.push(!primaryLeft ? null : { p, src: src2, label: false });
+      });
+
+      function buildCol(col, items, startTall) {
+        let hi = 0;
+        items.filter(Boolean).forEach(item => {
+          const isTall = startTall ? hi % 2 === 0 : hi % 2 !== 0;
+          hi++;
+          const card = document.createElement('div');
+          card.className = `project-card ${isTall ? 'tall' : 'short'}`;
+          card.innerHTML = `
+            <div class="card-img"><img src="${item.src}" alt="${item.p.name}"></div>
+            ${item.label ? `<div class="card-meta">
+              <span class="pm-num">${item.p.num}</span>
+              <span class="pm-name">${item.p.name}</span>
+              <span class="pm-date">${item.p.date}</span>
+              <span class="pm-cat">${item.p.category}</span>
+            </div>` : ''}
+          `;
+          card.addEventListener('click', () => openDetail(item.p));
+          col.appendChild(card);
+        });
+      }
+
+      buildCol(leftCol,  leftCards,  true);
+      buildCol(rightCol, rightCards, false);
+    }
+
+    function openDetail(project) {
+      document.getElementById('nav-default').style.display = 'none';
+      document.getElementById('nav-detail').style.display  = 'flex';
+      document.getElementById('nav-detail-label').textContent = `${project.num}  ${project.name}`;
+      document.getElementById('detail-hero-img').src = project.hero;
+
+      const dr = document.getElementById('detail-right');
+      dr.innerHTML = `
+        <div class="detail-header">
+          <div class="dh-top">
+            <div>
+              <div class="dh-num">${project.num}</div>
+              <div class="dh-title">${project.name}</div>
+            </div>
+            <div class="dh-cat">${project.category}</div>
+          </div>
+          <p class="dh-desc">${project.desc}</p>
+          <div class="dh-meta">
+            <div class="dh-meta-cell"><div class="dm-label">Client</div><div class="dm-value">${project.client}</div></div>
+            <div class="dh-meta-cell"><div class="dm-label">Scope</div><div class="dm-value">${project.scope}</div></div>
+            <div class="dh-meta-cell"><div class="dm-label">Date</div><div class="dm-value">${project.date}</div></div>
+            <div class="dh-meta-cell"><div class="dm-label">Contribution</div><div class="dm-value">${project.contribution}</div></div>
+          </div>
+        </div>
+        ${project.detail.map(src =>
+          `<div class="detail-img-wrap"><img src="${src}" alt="" loading="lazy"></div>`
+        ).join('')}
+      `;
+
+      dr.scrollTop = 0;
+      document.getElementById('view-detail').classList.add('open');
+      document.getElementById('view-grid').style.visibility = 'hidden';
+      document.getElementById('footer').style.visibility    = 'hidden';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetail() {
+      document.getElementById('nav-default').style.display = 'flex';
+      document.getElementById('nav-detail').style.display  = 'none';
+      document.getElementById('view-detail').classList.remove('open');
+      document.getElementById('view-grid').style.visibility = 'visible';
+      document.getElementById('footer').style.visibility    = 'visible';
+      document.body.style.overflow = '';
+    }
+
+    fetch('./data/projects.json')
+      .then(r => r.json())
+      .then(data => {
+        PROJECTS = data.map(p => ({ ...p, hero: p.detail[0] }));
+        renderGrid();
+      });
+  </script>
+</body>
+</html>
